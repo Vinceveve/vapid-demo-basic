@@ -28,7 +28,8 @@ self.addEventListener("push", function (event) {
 
   event.waitUntil(
     clients
-      .matchAll({ type: "window", includeUncontrolled: true })
+      // see https://developer.mozilla.org/en-US/docs/Web/API/Clients/matchAll
+      .matchAll({ type: "all", includeUncontrolled: false })
       .then(function (clientList) {
         const hasTabOpen = clientList.some((client) => {
           try {
