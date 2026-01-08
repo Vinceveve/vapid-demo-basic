@@ -8,6 +8,7 @@ Simple demonstration application for Web Push notifications using VAPID (Volunta
   - 5 additional notifications sent every minute for 5 minutes
 - Notifications display "hello world"
 - Clicking a notification opens `http://perdu.com`
+- **Smart notification suppression**: Notifications are not displayed if a tab with `perdu.com` is already open
 - Unsubscribe button to stop receiving notifications
 
 ## Installation and Configuration
