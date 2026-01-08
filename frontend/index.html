@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>VAPID Push Notifications</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+        <div class="container mx-auto px-4 py-12">
+            <div
+                class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
+            >
+                <div
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6"
+                >
+                    <h1 class="text-3xl font-bold text-white">
+                        VAPID Push Notifications
+                    </h1>
+                    <p class="text-blue-100 mt-2">
+                        Test push notifications even when the tab is closed
+                    </p>
+                </div>
+
+                <div class="p-8">
+                    <div class="mb-6">
+                        <p class="text-gray-700 mb-4">
+                            Subscribe to automatically receive 6 notifications:
+                        </p>
+                        <ul
+                            class="list-disc list-inside text-gray-600 space-y-2 ml-4"
+                        >
+                            <li>1 immediate notification</li>
+                            <li>5 notifications every minute for 5 minutes</li>
+                        </ul>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button
+                            id="subscribeBtn"
+                            class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        >
+                            Subscribe to notifications
+                        </button>
+                        <button
+                            id="unsubscribeBtn"
+                            class="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none hidden"
+                        >
+                            Unsubscribe
+                        </button>
+                    </div>
+
+                    <div id="status" class="mt-6 hidden"></div>
+                </div>
+            </div>
+
+            <div class="max-w-2xl mx-auto mt-8 text-center">
+                <p class="text-gray-600 text-sm">
+                    Notifications work even if you close this tab
+                </p>
+            </div>
+        </div>
+
+        <script src="app.js"></script>
+    </body>
+</html>
