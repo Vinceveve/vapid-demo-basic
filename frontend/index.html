@@ -35,6 +35,29 @@
                         </ul>
                     </div>
 
+                    <!-- Notification suppression option -->
+                    <div
+                        class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                        <label class="flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                id="suppressWhenLocalhostOpen"
+                                class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                                checked
+                            />
+                            <span class="ml-3 text-gray-700 font-medium">
+                                Ne pas afficher les notifications si un onglet
+                                localhost est ouvert
+                            </span>
+                        </label>
+                        <p class="text-sm text-gray-500 mt-2 ml-8">
+                            Quand activé, les notifications ne s'afficheront pas
+                            si perdu.com ou localhost:8000 est ouvert dans un
+                            onglet.
+                        </p>
+                    </div>
+
                     <!-- Client A Section -->
                     <div
                         class="mb-8 p-6 bg-blue-50 rounded-lg border-2 border-blue-200"

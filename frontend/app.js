@@ -16,6 +16,37 @@ const subscribeClientBBtn = document.getElementById("subscribeClientB");
 const unsubscribeClientBBtn = document.getElementById("unsubscribeClientB");
 const statusClientBDiv = document.getElementById("statusClientB");
 
+// Get DOM element for suppression checkbox
+const suppressCheckbox = document.getElementById("suppressWhenLocalhostOpen");
+
+// Helper function to notify service worker of preference change
+async function notifyServiceWorker(value) {
+  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: "UPDATE_SUPPRESSION_PREFERENCE",
+      value: value,
+    });
+    console.log("Sent suppression preference to service worker:", value);
+  }
+}
+
+// Preference helper functions (using localStorage for better compatibility)
+function saveSuppressPreference(value) {
+  localStorage.setItem("suppressWhenLocalhostOpen", JSON.stringify(value));
+  console.log("Suppression preference saved to localStorage:", value);
+
+  // Notify the service worker
+  notifyServiceWorker(value);
+}
+
+function loadSuppressPreference() {
+  const saved = localStorage.getItem("suppressWhenLocalhostOpen");
+  if (saved !== null) {
+    return JSON.parse(saved);
+  }
+  return true; // Default: suppression enabled
+}
+
 // Show status message
 function showStatus(statusDiv, message, type = "info") {
   statusDiv.textContent = message;
@@ -218,6 +249,27 @@ unsubscribeClientBBtn.addEventListener("click", () => {
     unsubscribeClientBBtn,
   );
 });
+
+// Save suppression preference when checkbox changes
+suppressCheckbox.addEventListener("change", () => {
+  saveSuppressPreference(suppressCheckbox.checked);
+  console.log(
+    "Notification suppression:",
+    suppressCheckbox.checked ? "enabled" : "disabled",
+  );
+});
+
+// Load suppression preference on load
+const loadedPreference = loadSuppressPreference();
+suppressCheckbox.checked = loadedPreference;
+console.log("Loaded suppression preference:", loadedPreference);
+
+// Send initial preference to service worker when it's ready
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.ready.then(() => {
+    notifyServiceWorker(loadedPreference);
+  });
+}
 
 // Check if already subscribed on load
 (async () => {

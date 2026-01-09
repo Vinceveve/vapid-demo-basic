@@ -1,5 +1,19 @@
 // Service Worker for handling push notifications
 
+// Store the suppression preference (updated by messages from the page)
+let suppressionEnabled = true; // Default value
+
+// Listen for messages from the page to update the preference
+self.addEventListener("message", function (event) {
+  if (event.data && event.data.type === "UPDATE_SUPPRESSION_PREFERENCE") {
+    suppressionEnabled = event.data.value;
+    console.log(
+      "Service Worker: Suppression preference updated to",
+      suppressionEnabled,
+    );
+  }
+});
+
 self.addEventListener("push", function (event) {
   console.log("Push notification received:", event);
 
@@ -28,26 +42,44 @@ self.addEventListener("push", function (event) {
 
   event.waitUntil(
     clients
-      // see https://developer.mozilla.org/en-US/docs/Web/API/Clients/matchAll
-      .matchAll({ type: "all", includeUncontrolled: false })
+      .matchAll({ type: "window", includeUncontrolled: true })
       .then(function (clientList) {
-        const hasTabOpen = clientList.some((client) => {
+        const hasTargetSiteOpen = clientList.some((client) => {
           try {
             const url = new URL(client.url);
-            return url.hostname === "localhost";
+            return (
+              url.hostname === "localhost" ||
+              url.hostname === "perdu.com" ||
+              url.hostname === "www.perdu.com"
+            );
           } catch (e) {
             return false;
           }
         });
 
-        // Only show notification if localhost is closed
-        if (!hasTabOpen) {
-          console.log("Tab is not open, showing notification");
-          return self.registration.showNotification(data.title, options);
-        } else {
-          console.log("tab is open, notification suppressed");
+        // Only suppress if both conditions are true:
+        // 1. Suppression is enabled
+        // 2. A target site tab is open
+        if (suppressionEnabled && hasTargetSiteOpen) {
+          console.log(
+            "Target site tab is open and suppression enabled, notification suppressed",
+          );
           return Promise.resolve();
+        } else {
+          console.log(
+            "Showing notification (suppression:",
+            suppressionEnabled,
+            ", tab open:",
+            hasTargetSiteOpen,
+            ")",
+          );
+          return self.registration.showNotification(data.title, options);
         }
+      })
+      .catch((error) => {
+        // If anything fails, just show the notification
+        console.error("Error in notification logic:", error);
+        return self.registration.showNotification(data.title, options);
       }),
   );
 });
