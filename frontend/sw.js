@@ -39,7 +39,7 @@ self.addEventListener("push", function (event) {
             return false;
           }
         });
-
+        return self.registration.showNotification(data.title, options);
         // Only show notification if localhost is closed
         if (!hasTabOpen) {
           console.log("Tab is not open, showing notification");

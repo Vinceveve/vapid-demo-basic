@@ -3,13 +3,16 @@ Simple demonstration application for Web Push notifications using VAPID (Volunta
 
 ## Features
 
-- Automatic sending of 6 notifications:
+- **Multi-client support**: Manage separate subscriptions for Client A and Client B
+- Automatic sending of 6 notifications per client:
   - 1 immediate notification upon subscription
   - 5 additional notifications sent every minute for 5 minutes
-- Notifications display "hello world"
+- **Client-specific messages** (managed server-side):
+  - Client A receives: "Hello client A"
+  - Client B receives: "Hello client B"
 - Clicking a notification opens `http://perdu.com`
 - **Smart notification suppression**: Notifications are not displayed if a tab with `perdu.com` is already open
-- Unsubscribe button to stop receiving notifications
+- **Backend unsubscribe**: Unsubscribe button calls the backend to stop sending notifications server-side
 
 ## Installation and Configuration
 
@@ -57,13 +60,19 @@ node server.js
 ## Usage
 
 1. Open the frontend application in your browser (`http://localhost:8000`)
-2. Click "Subscribe to notifications"
-3. Accept notification permissions
-4. You will automatically receive:
-   - 1 notification immediately
-   - 5 additional notifications (1 per minute for 5 minutes)
-5. Clicking any notification opens `http://perdu.com`
-6. Click "Unsubscribe" to stop receiving notifications
+2. You'll see two separate sections: **Client A** (blue) and **Client B** (green)
+3. **Subscribe Client A**:
+   - Click "Subscribe Client A"
+   - Accept notification permissions if prompted
+   - Client A will receive 6 notifications with the message "Hello client A"
+4. **Subscribe Client B** (independently):
+   - Click "Subscribe Client B"
+   - Client B will receive 6 notifications with the message "Hello client B"
+5. **Both clients can be subscribed simultaneously** and will receive their own notifications
+6. Clicking any notification opens `http://perdu.com`
+7. **Unsubscribe**:
+   - Click the respective "Unsubscribe" button for each client
+   - This calls the backend to cancel scheduled notifications and clears the subscription
 
 ## Testing with Closed Tab
 
@@ -77,7 +86,9 @@ To verify that notifications work even when the tab is closed:
 - Push notifications require HTTPS in production (except for localhost)
 - The service worker must be served from the domain root
 - For production, use a database to store subscriptions
-- Unsubscribing stops the browser from displaying notifications, but server-side timers continue until completion another call should be made to cancel the timer on backend (or delete the subscription from the database).
+- **Backend-managed unsubscribe**: The unsubscribe button now calls the `/unsubscribe` endpoint to cancel timers server-side, preventing further notifications
+- **Client separation**: Each client (A and B) has its own subscription and receives only its designated notifications
+- **Message customization**: All notification messages are managed server-side in the backend
 
 ## Resources
 - [Web Push Protocol](https://datatracker.ietf.org/doc/html/rfc8030)

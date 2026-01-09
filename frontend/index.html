@@ -35,22 +35,59 @@
                         </ul>
                     </div>
 
-                    <div class="flex gap-3">
-                        <button
-                            id="subscribeBtn"
-                            class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                        >
-                            Subscribe to notifications
-                        </button>
-                        <button
-                            id="unsubscribeBtn"
-                            class="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none hidden"
-                        >
-                            Unsubscribe
-                        </button>
+                    <!-- Client A Section -->
+                    <div
+                        class="mb-8 p-6 bg-blue-50 rounded-lg border-2 border-blue-200"
+                    >
+                        <h2 class="text-xl font-bold text-blue-800 mb-4">
+                            Client A
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Will receive: "Hello client A"
+                        </p>
+                        <div class="flex gap-3">
+                            <button
+                                id="subscribeClientA"
+                                class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            >
+                                Subscribe Client A
+                            </button>
+                            <button
+                                id="unsubscribeClientA"
+                                class="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none hidden"
+                            >
+                                Unsubscribe Client A
+                            </button>
+                        </div>
+                        <div id="statusClientA" class="mt-4 hidden"></div>
                     </div>
 
-                    <div id="status" class="mt-6 hidden"></div>
+                    <!-- Client B Section -->
+                    <div
+                        class="p-6 bg-green-50 rounded-lg border-2 border-green-200"
+                    >
+                        <h2 class="text-xl font-bold text-green-800 mb-4">
+                            Client B
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Will receive: "Hello client B"
+                        </p>
+                        <div class="flex gap-3">
+                            <button
+                                id="subscribeClientB"
+                                class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            >
+                                Subscribe Client B
+                            </button>
+                            <button
+                                id="unsubscribeClientB"
+                                class="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none hidden"
+                            >
+                                Unsubscribe Client B
+                            </button>
+                        </div>
+                        <div id="statusClientB" class="mt-4 hidden"></div>
+                    </div>
                 </div>
             </div>
 

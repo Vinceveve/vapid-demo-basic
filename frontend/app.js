@@ -1,14 +1,26 @@
 const API_URL = "http://localhost:3000";
 
-const subscribeBtn = document.getElementById("subscribeBtn");
-const unsubscribeBtn = document.getElementById("unsubscribeBtn");
-const statusDiv = document.getElementById("status");
+// Store subscriptions for each client
+const clientSubscriptions = {
+  "client A": null,
+  "client B": null,
+};
+
+// Get DOM elements for Client A
+const subscribeClientABtn = document.getElementById("subscribeClientA");
+const unsubscribeClientABtn = document.getElementById("unsubscribeClientA");
+const statusClientADiv = document.getElementById("statusClientA");
+
+// Get DOM elements for Client B
+const subscribeClientBBtn = document.getElementById("subscribeClientB");
+const unsubscribeClientBBtn = document.getElementById("unsubscribeClientB");
+const statusClientBDiv = document.getElementById("statusClientB");
 
 // Show status message
-function showStatus(message, type = "info") {
+function showStatus(statusDiv, message, type = "info") {
   statusDiv.textContent = message;
   statusDiv.classList.remove("hidden");
-  statusDiv.className = "mt-6 p-4 rounded-lg border-l-4";
+  statusDiv.className = "mt-4 p-4 rounded-lg border-l-4";
 
   if (type === "error") {
     statusDiv.classList.add("bg-red-50", "border-red-500", "text-red-700");
@@ -55,10 +67,15 @@ async function getVapidPublicKey() {
   return data.publicKey;
 }
 
-// Subscribe to push notifications
-async function subscribeUser() {
+// Subscribe to push notifications for a specific client
+async function subscribeClient(
+  clientId,
+  statusDiv,
+  subscribeBtn,
+  unsubscribeBtn,
+) {
   try {
-    showStatus("Subscribing...", "info");
+    showStatus(statusDiv, "Subscribing...", "info");
 
     // Request notification permission
     const permission = await Notification.requestPermission();
@@ -79,67 +96,128 @@ async function subscribeUser() {
       applicationServerKey: applicationServerKey,
     });
 
-    // Send subscription to server
+    // Store subscription locally
+    clientSubscriptions[clientId] = subscription;
+
+    // Send subscription to server with clientId
     const response = await fetch(`${API_URL}/subscribe`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(subscription),
+      body: JSON.stringify({
+        subscription: subscription,
+        clientId: clientId,
+      }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error("Registration error");
+      throw new Error(data.message || "Registration error");
     }
 
     showStatus(
-      data.message ||
-        "Subscription successful! You will receive 6 notifications automatically.",
+      statusDiv,
+      data.message || `Subscription successful for ${clientId}!`,
       "success",
     );
     subscribeBtn.disabled = true;
     unsubscribeBtn.classList.remove("hidden");
   } catch (error) {
     console.error("Error:", error);
-    showStatus(`Error: ${error.message}`, "error");
+    showStatus(statusDiv, `Error: ${error.message}`, "error");
   }
 }
 
-// Unsubscribe from push notifications
-async function unsubscribeUser() {
+// Unsubscribe from push notifications for a specific client
+async function unsubscribeClient(
+  clientId,
+  statusDiv,
+  subscribeBtn,
+  unsubscribeBtn,
+) {
   try {
-    showStatus("Unsubscribing...", "info");
+    showStatus(statusDiv, "Unsubscribing...", "info");
 
-    const registration = await navigator.serviceWorker.getRegistration();
-    if (!registration) {
-      throw new Error("No service worker registered");
-    }
+    const subscription = clientSubscriptions[clientId];
 
-    const subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
       throw new Error("No subscription found");
     }
 
-    // Unsubscribe from push
+    // Notify backend to stop sending notifications
+    const response = await fetch(`${API_URL}/unsubscribe`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        endpoint: subscription.endpoint,
+        clientId: clientId,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Unsubscribe error");
+    }
+
+    // Unsubscribe from push on client side
     await subscription.unsubscribe();
+    clientSubscriptions[clientId] = null;
 
     showStatus(
-      "Unsubscription successful! You will no longer receive notifications.",
+      statusDiv,
+      data.message || `Unsubscription successful for ${clientId}!`,
       "success",
     );
     subscribeBtn.disabled = false;
     unsubscribeBtn.classList.add("hidden");
   } catch (error) {
     console.error("Error:", error);
-    showStatus(`Error: ${error.message}`, "error");
+    showStatus(statusDiv, `Error: ${error.message}`, "error");
   }
 }
 
-// Event listeners
-subscribeBtn.addEventListener("click", subscribeUser);
-unsubscribeBtn.addEventListener("click", unsubscribeUser);
+// Event listeners for Client A
+subscribeClientABtn.addEventListener("click", () => {
+  subscribeClient(
+    "client A",
+    statusClientADiv,
+    subscribeClientABtn,
+    unsubscribeClientABtn,
+  );
+});
+
+unsubscribeClientABtn.addEventListener("click", () => {
+  unsubscribeClient(
+    "client A",
+    statusClientADiv,
+    subscribeClientABtn,
+    unsubscribeClientABtn,
+  );
+});
+
+// Event listeners for Client B
+subscribeClientBBtn.addEventListener("click", () => {
+  subscribeClient(
+    "client B",
+    statusClientBDiv,
+    subscribeClientBBtn,
+    unsubscribeClientBBtn,
+  );
+});
+
+unsubscribeClientBBtn.addEventListener("click", () => {
+  unsubscribeClient(
+    "client B",
+    statusClientBDiv,
+    subscribeClientBBtn,
+    unsubscribeClientBBtn,
+  );
+});
 
 // Check if already subscribed on load
 (async () => {
@@ -149,11 +227,12 @@ unsubscribeBtn.addEventListener("click", unsubscribeUser);
       if (registration) {
         const subscription = await registration.pushManager.getSubscription();
         if (subscription) {
-          subscribeBtn.disabled = true;
-          unsubscribeBtn.classList.remove("hidden");
+          // Note: We can't determine which client this subscription belongs to
+          // In a real app, you'd need to store this info in localStorage
           showStatus(
-            "Already subscribed to notifications. You will receive notifications automatically.",
-            "success",
+            statusClientADiv,
+            "A subscription already exists. Please refresh if you want to start fresh.",
+            "info",
           );
         }
       }

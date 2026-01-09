@@ -9,10 +9,12 @@ dotenv.config();
 const fastify = Fastify({ logger: true });
 
 // Store subscriptions in memory with their notification timers
+// Key format: "clientId:endpoint"
 const subscriptions: Map<
   string,
   {
     subscription: webpush.PushSubscription;
+    clientId: string;
     timers: NodeJS.Timeout[];
   }
 > = new Map();
@@ -44,30 +46,44 @@ fastify.get("/vapid-public-key", async () => {
 // Helper function to send a notification
 async function sendNotificationToSubscription(
   subscription: webpush.PushSubscription,
+  clientId: string,
 ) {
   const payload = JSON.stringify({
     title: "Notification",
-    body: "hello world",
+    body: `Hello ${clientId}`,
     url: "http://perdu.com",
   });
 
   try {
     await webpush.sendNotification(subscription, payload);
     console.log(
-      "Notification sent successfully to",
+      `Notification sent successfully to ${clientId}:`,
       subscription.endpoint.substring(0, 50) + "...",
     );
     return true;
   } catch (error) {
-    console.error("Error sending notification:", error);
+    console.error(`Error sending notification to ${clientId}:`, error);
     return false;
   }
 }
 
 // Subscribe endpoint
 fastify.post("/subscribe", async (request, reply) => {
-  const subscription = request.body as webpush.PushSubscription;
-  const subscriptionKey = subscription.endpoint;
+  const body = request.body as {
+    subscription: webpush.PushSubscription;
+    clientId: string;
+  };
+
+  const { subscription, clientId } = body;
+
+  if (!clientId) {
+    return reply.status(400).send({
+      success: false,
+      message: "clientId is required",
+    });
+  }
+
+  const subscriptionKey = `${clientId}:${subscription.endpoint}`;
 
   // Clear existing timers if subscription already exists
   if (subscriptions.has(subscriptionKey)) {
@@ -77,20 +93,23 @@ fastify.post("/subscribe", async (request, reply) => {
 
   // Store subscription
   const timers: NodeJS.Timeout[] = [];
-  subscriptions.set(subscriptionKey, { subscription, timers });
+  subscriptions.set(subscriptionKey, { subscription, clientId, timers });
 
-  console.log("New subscription:", subscriptionKey.substring(0, 50) + "...");
+  console.log(
+    `New subscription for ${clientId}:`,
+    subscription.endpoint.substring(0, 50) + "...",
+  );
   console.log("Total subscriptions:", subscriptions.size);
 
   // Send immediate notification
-  await sendNotificationToSubscription(subscription);
+  await sendNotificationToSubscription(subscription, clientId);
 
   // Schedule notifications every minute for 5 minutes
   for (let i = 1; i <= 5; i++) {
     const timer = setTimeout(
       async () => {
-        console.log(`Sending scheduled notification ${i}/5`);
-        await sendNotificationToSubscription(subscription);
+        console.log(`Sending scheduled notification ${i}/5 to ${clientId}`);
+        await sendNotificationToSubscription(subscription, clientId);
       },
       i * 60 * 1000,
     ); // i minutes in milliseconds
@@ -100,9 +119,47 @@ fastify.post("/subscribe", async (request, reply) => {
 
   return {
     success: true,
-    message:
-      "Subscribed! You will receive 6 notifications (1 now + 5 over the next 5 minutes)",
+    message: `Subscribed as ${clientId}! You will receive 6 notifications (1 now + 5 over the next 5 minutes)`,
   };
+});
+
+// Unsubscribe endpoint
+fastify.post("/unsubscribe", async (request, reply) => {
+  const body = request.body as {
+    endpoint: string;
+    clientId: string;
+  };
+
+  const { endpoint, clientId } = body;
+
+  if (!clientId || !endpoint) {
+    return reply.status(400).send({
+      success: false,
+      message: "clientId and endpoint are required",
+    });
+  }
+
+  const subscriptionKey = `${clientId}:${endpoint}`;
+
+  // Clear timers and remove subscription
+  if (subscriptions.has(subscriptionKey)) {
+    const existing = subscriptions.get(subscriptionKey);
+    existing?.timers.forEach((timer) => clearTimeout(timer));
+    subscriptions.delete(subscriptionKey);
+
+    console.log(`Unsubscribed ${clientId}:`, endpoint.substring(0, 50) + "...");
+    console.log("Remaining subscriptions:", subscriptions.size);
+
+    return {
+      success: true,
+      message: `Unsubscribed ${clientId}! No more notifications will be sent.`,
+    };
+  } else {
+    return reply.status(404).send({
+      success: false,
+      message: `Subscription not found for ${clientId}`,
+    });
+  }
 });
 
 // Start server
