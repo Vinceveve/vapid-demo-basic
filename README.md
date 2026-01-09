@@ -12,7 +12,7 @@ Simple demonstration application for Web Push notifications using VAPID (Volunta
   - Client B receives: "Hello client B"
 - Clicking a notification opens `http://perdu.com`
 - **Smart notification suppression** (configurable): 
-  - Notifications are not displayed if a tab with `perdu.com` or `localhost` is already open
+  - Notifications are not displayed if a tab with `localhost` or the target site is already open
   - Can be enabled/disabled via a checkbox in the UI (enabled by default)
   - Preference is saved in localStorage and communicated to the service worker via postMessage
   - **Firefox compatible**: Uses localStorage + postMessage instead of IndexedDB for better cross-browser support

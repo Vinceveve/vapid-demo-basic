@@ -1,10 +1,14 @@
 // Service Worker for handling push notifications
+const SW_VERSION = "v1.1";
+console.log("Service Worker loaded:", SW_VERSION);
 
 // Store the suppression preference (updated by messages from the page)
 let suppressionEnabled = true; // Default value
 
 // Listen for messages from the page to update the preference
 self.addEventListener("message", function (event) {
+  console.log("Service Worker received message:", event.data);
+
   if (event.data && event.data.type === "UPDATE_SUPPRESSION_PREFERENCE") {
     suppressionEnabled = event.data.value;
     console.log(
@@ -47,11 +51,8 @@ self.addEventListener("push", function (event) {
         const hasTargetSiteOpen = clientList.some((client) => {
           try {
             const url = new URL(client.url);
-            return (
-              url.hostname === "localhost" ||
-              url.hostname === "perdu.com" ||
-              url.hostname === "www.perdu.com"
-            );
+            // Check if localhost or the target notification URL is open
+            return url.hostname === "localhost";
           } catch (e) {
             return false;
           }
@@ -92,4 +93,15 @@ self.addEventListener("notificationclick", function (event) {
   const urlToOpen = event.notification.data.url || "http://perdu.com";
 
   event.waitUntil(clients.openWindow(urlToOpen));
+});
+
+// Force activation of new service worker
+self.addEventListener("install", function (event) {
+  console.log("Service Worker installing:", SW_VERSION);
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", function (event) {
+  console.log("Service Worker activating:", SW_VERSION);
+  event.waitUntil(clients.claim());
 });

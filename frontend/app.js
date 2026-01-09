@@ -21,12 +21,21 @@ const suppressCheckbox = document.getElementById("suppressWhenLocalhostOpen");
 
 // Helper function to notify service worker of preference change
 async function notifyServiceWorker(value) {
-  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: "UPDATE_SUPPRESSION_PREFERENCE",
-      value: value,
-    });
-    console.log("Sent suppression preference to service worker:", value);
+  if ("serviceWorker" in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration.active) {
+        registration.active.postMessage({
+          type: "UPDATE_SUPPRESSION_PREFERENCE",
+          value: value,
+        });
+        console.log("Sent suppression preference to service worker:", value);
+      } else {
+        console.warn("Service worker not active yet");
+      }
+    } catch (error) {
+      console.error("Error sending message to service worker:", error);
+    }
   }
 }
 
